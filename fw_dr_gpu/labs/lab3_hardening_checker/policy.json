@@ -1,0 +1,64 @@
+{
+  "_comment": "Release hardening baseline (lab). Levels: error = blocks the release gate, warn = reported (blocks only with --fail-on warn), info = reported, off = not evaluated. Keys starting with '_' are ignored.",
+  "profiles": {
+    "executable": {
+      "nx_stack": "error",
+      "no_rwx_segments": "error",
+      "pie": "error",
+      "relro_full": "error",
+      "canary": "warn",
+      "fortify": "warn",
+      "cet_ibt": "warn",
+      "cet_shstk": "warn",
+      "bti": "warn",
+      "pac": "warn",
+      "no_insecure_runpath": "error",
+      "no_textrel": "error",
+      "stripped": "info"
+    },
+    "shared_lib": {
+      "nx_stack": "error",
+      "no_rwx_segments": "error",
+      "relro_full": "warn",
+      "canary": "warn",
+      "fortify": "warn",
+      "cet_ibt": "warn",
+      "cet_shstk": "warn",
+      "bti": "warn",
+      "pac": "warn",
+      "no_insecure_runpath": "error",
+      "no_textrel": "error",
+      "stripped": "info"
+    },
+    "kernel_module": {
+      "module_signed": "error",
+      "module_no_wx_sections": "error",
+      "module_retpoline": "warn",
+      "canary": "warn"
+    },
+    "object": {
+      "_comment": "Intermediate objects: catches the 'one assembly file silently drops NX/CET' problem before link time.",
+      "nx_stack": "warn",
+      "cet_ibt": "warn",
+      "cet_shstk": "warn"
+    }
+  },
+  "waivers": [
+    {
+      "path": "*libdemo.so",
+      "check": "relro_full",
+      "owner": "team-demo",
+      "reason": "Vendor-provided library built with lazy binding; vendor fix requested",
+      "ticket": "SEC-101",
+      "expires": "2027-06-30"
+    },
+    {
+      "path": "*demo_weak",
+      "check": "canary",
+      "owner": "team-legacy",
+      "reason": "Demonstrates an EXPIRED waiver: expired waivers fail the gate",
+      "ticket": "SEC-042",
+      "expires": "2026-01-31"
+    }
+  ]
+}
