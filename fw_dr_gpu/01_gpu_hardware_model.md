@@ -31,8 +31,23 @@ security boundary in each step.
 
 ## 1. PCIe: how the CPU finds and talks to the GPU
 
-**Enumeration.** At boot, firmware/kernel walk the PCIe hierarchy and read every function's
-**configuration space** (256 B legacy, 4 KB extended for PCIe). Key fields:
+**Naming: which "firmware"?** Two unrelated things share the word. In these notes "firmware"
+alone means **device firmware** (code for the GPU itself). The host's own boot code is always
+called **platform firmware**. Everything on the host side runs on the host CPU, in three layers:
+
+| Name | Runs on | What it is | Role in PCIe/BAR setup |
+|---|---|---|---|
+| **Platform firmware** (UEFI/BIOS) | Host CPU, from motherboard flash | Boots the machine before the OS | Enumerates PCIe, sizes each BAR, assigns addresses |
+| **Kernel PCI core** | Host CPU | Generic OS code, same for every vendor | Re-reads the BARs, may reassign them, records start/length |
+| **Device driver** (`nvidia.ko`, nouveau, nova) | Host CPU | Vendor-specific kernel module | Only *uses* the already-assigned BARs: enables the device and maps them |
+| **Device firmware** (VBIOS, ucode, GSP-RM: see 04 §1) | The GPU's own microcontrollers | Code shipped for the card | None. BAR sizes are fixed by the PCIe endpoint hardware |
+
+One edge case: the VBIOS is device firmware (stored on the card), but its UEFI GOP driver /
+legacy VGA option ROM is loaded by platform firmware and executes **on the host CPU**.
+
+**Enumeration.** At boot, platform firmware (UEFI/BIOS) and then the kernel's PCI core walk the
+PCIe hierarchy and read every function's **configuration space** (256 B legacy, 4 KB extended
+for PCIe). Key fields:
 
 | Offset | Field | Why you care |
 |---|---|---|
@@ -43,7 +58,8 @@ security boundary in each step.
 | 0x30 | Expansion ROM BAR | Where the **VBIOS** (option ROM) is exposed. |
 | 0x34 | Capabilities pointer | Linked list: PM, MSI, MSI-X, PCIe, and extended caps: AER, SR-IOV, ACS, ATS, PASID, Resizable BAR, DOE/SPDM. |
 
-**BARs.** Firmware sizes each BAR (write all 1s, read back the mask) and assigns it an address.
+**BARs.** Platform firmware (and again the kernel's PCI core, not the GPU driver) sizes each BAR
+(write all 1s, read back the mask) and assigns it an address.
 BAR low bits encode: I/O vs memory, 32- vs 64-bit (a 64-bit BAR consumes two slots), and
 *prefetchable* (safe to cache/write-combine; used for memory apertures, never for side-effecting
 registers).
@@ -246,6 +262,8 @@ batch buffers. A hardware gap there (CVE-2019-0155) let the blitter write arbitr
 
 | Term | One-liner |
 |---|---|
+| Platform firmware | UEFI/BIOS on the host CPU: enumerates PCIe and assigns BARs before the OS runs |
+| Device firmware | Code for the GPU's own microcontrollers (VBIOS ucode, GSP-RM, ...); what "firmware" alone means in these notes |
 | BAR | Window of device memory/registers in CPU physical address space |
 | MMIO | CPU load/store to device registers through a BAR |
 | DMA / bus master | Device-initiated memory access |

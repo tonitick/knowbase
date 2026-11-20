@@ -9,6 +9,11 @@ clearest public description of how NVIDIA GPUs boot. Read them.
 
 ## 1. What "firmware" means on a GPU
 
+Everything in this file is **device firmware**: code and data that belong to the GPU and
+(mostly) run on its own microcontrollers. It is not the host's **platform firmware**
+(UEFI/BIOS), which runs on the host CPU and does PCIe enumeration and BAR assignment; see the
+naming table in 01 §1.
+
 | Piece | Where it lives | Role |
 |---|---|---|
 | **VBIOS** | SPI flash on the board (PCI expansion ROM) | Legacy x86 VGA BIOS image, UEFI GOP driver, NVIDIA tables (BIT), devinit scripts, and **ucode partitions**: e.g. **FWSEC** (image type 0xE0) |

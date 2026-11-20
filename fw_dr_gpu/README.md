@@ -19,6 +19,11 @@ user-mode, own the release scanning pipeline, and lead AI-agent adoption in secu
 | L2 | [labs/lab2_toy_gpu_driver/](labs/lab2_toy_gpu_driver/) | Toy GPU-like kernel driver: fixed vs `VULN=1` build with 8 classic bugs; spot-the-bug + answer key | 2 h |
 | L3 | [labs/lab3_hardening_checker/](labs/lab3_hardening_checker/) | Working policy-as-code ELF/kernel-module hardening checker: waivers, baselines, SARIF, tests | 2 h |
 
+## Naming convention
+"Firmware" alone means **device firmware**: code for the GPU's own microcontrollers (VBIOS
+ucode, GSP-RM, FSP, ...). The host's boot code (UEFI/BIOS) is always called **platform
+firmware**. Full table of who does what in 01 §1.
+
 ## Suggested order
 - **2-day crunch:** 01 → 03 → 05 → 06, run Lab 3, then drill 07.
 - **1 week:** everything in order. Do Lab 2's review exercise on paper before reading its answer key. Ten questions from 07 out loud every evening.
